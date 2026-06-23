@@ -749,114 +749,70 @@ COMMENTAIRE:
 ${s.commentaire||"(à générer)"}`;
 }
 
+
 function printAllPDF(){
-  // Ouvrir une nouvelle fenêtre avec tous les bulletins formatés pour impression
-  const w = window.open('', '_blank');
-  const f=(v,t)=>v!==null?fmt(v)+'/'+t:'—';
-  const ne=b=>gS(STUDENTS[0].cp||'')&&false; // dummy
-  
-  let pages = STUDENTS.map(st => {
-    const s = gS(KEY(st));
-    const fr = cBr(s,'fr'), mt = cBr(s,'math'), ev = cBr(s,'eveil');
-    const se60 = cSE(s), nb = cNb(s), op2 = cOp(s);
-    const nFr = b => s[b]._ne||{};
-    const fv = (v,t) => v!==null ? fmt(v)+'/'+t : '—';
-    const comment = s.commentaire || '(pas de commentaire)';
-    
-    // Moys
-    const moyFr = fr!==null?fmt(fr)+'/100':'—';
-    const moyMa = mt!==null?fmt(mt)+'/100':'—';
-    const moyEv = ev!==null?fmt(ev)+'/100':'—';
-    
-    // Comportement
-    const cd = gC(st.cp);
-    const compStr = cd ? cLbF(st.cp) : 'Non disponible';
-    
-    return \`<div class="print-page">
-      <div class="print-header">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="print-name">\${st.prenom} \${st.nom}</div>
-            <div style="font-size:11px;color:#666">Bulletin P5 — La Providence · \${TLBL[state.trim]} \${state.annee}</div>
-          </div>
-          <div style="text-align:right;font-size:11px;color:#666">Comportement : <strong>\${compStr}</strong></div>
-        </div>
-      </div>
-      <div class="print-moys">
-        <div class="print-moy"><div class="val" style="color:\${fr>=65?'#1D9E75':fr>=50?'#BA7517':'#A32D2D'}">\${moyFr}</div><div class="lbl">Français</div></div>
-        <div class="print-moy"><div class="val" style="color:\${mt>=65?'#1D9E75':mt>=50?'#BA7517':'#A32D2D'}">\${moyMa}</div><div class="lbl">Maths</div></div>
-        <div class="print-moy"><div class="val" style="color:\${ev>=65?'#1D9E75':ev>=50?'#BA7517':'#A32D2D'}">\${moyEv}</div><div class="lbl">Éveil</div></div>
-      </div>
-      <div class="print-comment">\${comment.replace(/\n/g,'<br>')}</div>
-      <div class="print-section">
-        <h4>Français (SE: \${fv(se60,60)})</h4>
-        \${[
-          ['Dictées',cPool(s.fr.se.dictees||[],10),10,'fr','se_dictees'],
-          ['Grammaire',cPool(s.fr.se.grammaire||[],10),10,'fr','se_grammaire'],
-          ['Analyse',cPool(s.fr.se.analyse||[],10),10,'fr','se_analyse'],
-          ['Conjugaison',cPool(s.fr.se.conjugaison||[],10),10,'fr','se_conjugaison'],
-          ['Expression',cPool(s.fr.se.expression||[],10),10,'fr','se_expression'],
-          ['Vocabulaire',cPool(s.fr.se.vocabulaire||[],10),10,'fr','se_vocabulaire'],
-          ['Lecture',cPool(s.fr.sl||[],20),20,'fr','sl'],
-          ['Écoute',cPool(s.fr.sec||[],10),10,'fr','sec'],
-        ].filter(([l,v,t,br,nk])=>!s[br]._ne?.[nk]&&v!==null).map(([l,v,t])=>
-          \`<div class="print-row"><span>\${l}</span><span style="font-weight:600">\${fv(v,t)}</span></div>\`
-        ).join('')}
-      </div>
-      <div class="print-section">
-        <h4>Mathématiques</h4>
-        \${[
-          ['Nombres',nb,20],['Opérations',op2,30],
-          ['Grandeurs',cPool(s.math.grandeurs||[],20),20],
-          ['Solides',cPool(s.math.solides||[],20),20],
-          ['Traitement',cPool(s.math.traitement||[],10),10],
-        ].filter(([l,v])=>v!==null).map(([l,v,t])=>
-          \`<div class="print-row"><span>\${l}</span><span style="font-weight:600">\${fv(v,t)}</span></div>\`
-        ).join('')}
-      </div>
-      <div class="print-section">
-        <h4>Éveil</h4>
-        \${[
-          ['Histoire',cPool(s.eveil.histoire||[],10),10],
-          ['Géographie',cPool(s.eveil.geo||[],10),10],
-          ['Sciences',cPool(s.eveil.sciences||[],10),10],
-        ].filter(([l,v])=>v!==null).map(([l,v,t])=>
-          \`<div class="print-row"><span>\${l}</span><span style="font-weight:600">\${fv(v,t)}</span></div>\`
-        ).join('')}
-      </div>
-    </div>\`;
-  }).join('');
-  
-  w.document.write(\`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bulletins P5 \${state.annee}</title><style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
-    body{background:white;color:#111}
-    .print-page{page-break-after:always;padding:20px;max-width:800px;margin:0 auto;border-bottom:3px solid #eee}
-    .print-page:last-child{page-break-after:avoid;border-bottom:none}
-    .print-header{border-bottom:2px solid #1D9E75;margin-bottom:10px;padding-bottom:8px}
-    .print-name{font-size:18px;font-weight:700}
-    .print-moys{display:flex;gap:30px;margin:10px 0;padding:10px;background:#f9f9f9;border-radius:8px}
-    .print-moy{text-align:center}
-    .print-moy .val{font-size:22px;font-weight:700}
-    .print-moy .lbl{font-size:11px;color:#666}
-    .print-comment{margin:10px 0;font-size:12px;line-height:1.7;border:1px solid #ddd;padding:10px;border-radius:6px;background:#f9f9f9;white-space:pre-wrap}
-    .print-section{margin-top:10px}
-    .print-section h4{font-size:11px;font-weight:700;text-transform:uppercase;color:#666;margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid #eee}
-    .print-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 4px;border-bottom:1px solid #f5f5f5}
-    .print-row:last-child{border-bottom:none}
-    @media print{.print-page{border-bottom:none}}
-    .no-print{text-align:center;padding:20px;background:#1D9E75;color:white}
-    .no-print button{background:white;color:#1D9E75;border:none;padding:10px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin:0 8px}
-    @media print{.no-print{display:none}}
-  </style></head><body>
-  <div class="no-print">
-    <button onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
-    <button onclick="window.close()">✕ Fermer</button>
-  </div>
-  \${pages}
-  </body></html>\`);
+  var pages = '';
+  STUDENTS.forEach(function(st){
+    var s = gS(KEY(st));
+    var fr = cBr(s,'fr'), mt = cBr(s,'math'), ev = cBr(s,'eveil');
+    var se60 = cSE(s), nb = cNb(s), op2 = cOp(s);
+    var ne_fr = s.fr._ne||{}, ne_ma = s.math._ne||{}, ne_ev = s.eveil._ne||{};
+    var comment = (s.commentaire||'(pas de commentaire)').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    var cd = gC(st.cp);
+    var compStr = cd ? cLbF(st.cp) : 'Non disponible';
+    var frC = fr>=65?'#1D9E75':fr>=50?'#BA7517':'#A32D2D';
+    var mtC = mt>=65?'#1D9E75':mt>=50?'#BA7517':'#A32D2D';
+    var evC = ev>=65?'#1D9E75':ev>=50?'#BA7517':'#A32D2D';
+
+    function row(lbl, v, t){ if(v===null)return ''; return '<div class=\"pr\"><span>'+lbl+'</span><span class=\"pv\">'+fmt(v)+'/'+t+'</span></div>'; }
+
+    var frRows = '';
+    if(!ne_fr['se_dictees']) frRows += row('Dictées', cPool(s.fr.se.dictees||[],10), 10);
+    if(!ne_fr['se_grammaire']) frRows += row('Grammaire', cPool(s.fr.se.grammaire||[],10), 10);
+    if(!ne_fr['se_analyse']) frRows += row('Analyse', cPool(s.fr.se.analyse||[],10), 10);
+    if(!ne_fr['se_conjugaison']) frRows += row('Conjugaison', cPool(s.fr.se.conjugaison||[],10), 10);
+    if(!ne_fr['se_expression']) frRows += row('Expression', cPool(s.fr.se.expression||[],10), 10);
+    if(!ne_fr['se_vocabulaire']) frRows += row('Vocabulaire', cPool(s.fr.se.vocabulaire||[],10), 10);
+    if(!ne_fr['sl']) frRows += row('Lecture', cPool(s.fr.sl||[],20), 20);
+    if(!ne_fr['sec']) frRows += row('Écoute', cPool(s.fr.sec||[],10), 10);
+
+    var maRows = '';
+    maRows += row('Nombres', nb, 20);
+    maRows += row('Opérations', op2, 30);
+    if(!ne_ma['grandeurs']) maRows += row('Grandeurs', cPool(s.math.grandeurs||[],20), 20);
+    if(!ne_ma['solides']) maRows += row('Solides', cPool(s.math.solides||[],20), 20);
+    if(!ne_ma['traitement']) maRows += row('Traitement', cPool(s.math.traitement||[],10), 10);
+
+    var evRows = '';
+    if(!ne_ev['histoire']) evRows += row('Histoire', cPool(s.eveil.histoire||[],10), 10);
+    if(!ne_ev['geo']) evRows += row('Géographie', cPool(s.eveil.geo||[],10), 10);
+    if(!ne_ev['sciences']) evRows += row('Sciences', cPool(s.eveil.sciences||[],10), 10);
+
+    pages += '<div class="page">';
+    pages += '<div class="hdr"><div><div class="nm">'+st.prenom+' '+st.nom+'</div>';
+    pages += '<div class="sub">Bulletin P5 — La Providence · '+TLBL[state.trim]+' '+state.annee+'</div></div>';
+    pages += '<div class="comp">Comportement : <strong>'+compStr+'</strong></div></div>';
+    pages += '<div class="moys">';
+    pages += '<div class="moy"><div class="mv" style="color:'+frC+'">'+( fr!==null?fmt(fr)+'/100':'—')+'</div><div class="ml">Français</div></div>';
+    pages += '<div class="moy"><div class="mv" style="color:'+mtC+'">'+( mt!==null?fmt(mt)+'/100':'—')+'</div><div class="ml">Maths</div></div>';
+    pages += '<div class="moy"><div class="mv" style="color:'+evC+'">'+( ev!==null?fmt(ev)+'/100':'—')+'</div><div class="ml">Éveil</div></div>';
+    pages += '</div>';
+    pages += '<div class="cmt">'+comment+'</div>';
+    if(frRows) pages += '<div class="sec"><div class="sh">Français (SE: '+(se60!==null?fmt(se60)+'/60':'—')+')</div>'+frRows+'</div>';
+    if(maRows) pages += '<div class="sec"><div class="sh">Mathématiques</div>'+maRows+'</div>';
+    if(evRows) pages += '<div class="sec"><div class="sh">Éveil</div>'+evRows+'</div>';
+    pages += '</div>';
+  });
+
+  var css = '*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}body{background:white;color:#111}.noprint{text-align:center;padding:14px;background:#1D9E75;color:white}.noprint button{background:white;color:#1D9E75;border:none;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin:0 6px}.page{page-break-after:always;padding:20px;max-width:800px;margin:0 auto;border-bottom:2px solid #eee}.page:last-child{page-break-after:avoid;border-bottom:none}.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1D9E75;padding-bottom:8px;margin-bottom:10px}.nm{font-size:17px;font-weight:700}.sub{font-size:11px;color:#666;margin-top:2px}.comp{font-size:12px;color:#444}.moys{display:flex;gap:24px;padding:10px;background:#f5f5f5;border-radius:8px;margin-bottom:10px}.moy{text-align:center}.mv{font-size:20px;font-weight:700}.ml{font-size:10px;color:#666}.cmt{font-size:12px;line-height:1.7;border:1px solid #ddd;padding:10px;border-radius:6px;background:#fafafa;margin-bottom:10px;white-space:pre-wrap}.sec{margin-bottom:10px}.sh{font-size:10px;font-weight:700;text-transform:uppercase;color:#666;padding-bottom:3px;border-bottom:1px solid #eee;margin-bottom:4px}.pr{display:flex;justify-content:space-between;font-size:11px;padding:2px 4px;border-bottom:1px solid #f5f5f5}.pr:last-child{border-bottom:none}.pv{font-weight:600}@media print{.noprint{display:none}.page{border-bottom:none}}';
+
+  var w = window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bulletins P5</title><style>'+css+'</style></head><body>');
+  w.document.write('<div class="noprint"><button onclick="window.print()">🖨️ Imprimer / Sauver PDF</button><button onclick="window.close()">✕ Fermer</button></div>');
+  w.document.write(pages);
+  w.document.write('</body></html>');
   w.document.close();
 }
-
 
 render();
 </script>
