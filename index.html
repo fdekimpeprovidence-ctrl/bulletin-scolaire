@@ -297,6 +297,15 @@ function copyJSON(){
   if(ok)showOK();
 }
 
+function downloadJSON(){
+  const json=getJSON();
+  const blob=new Blob([json],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="bulletin.json";a.click();
+  URL.revokeObjectURL(url);
+}
+
 function openSaveModal(){
   showSaveModal=true;render();
   setTimeout(()=>{
@@ -398,11 +407,12 @@ function render(){
   <div class="savezone">
     <div class="savezone-title">💾 SAUVEGARDE — À faire après chaque encodage !</div>
     <div class="savezone-row">
-      <button class="btn orange" onclick="copyJSON()">📋 Copier JSON dans le presse-papier</button>
+      <button class="btn orange" onclick="copyJSON()">📋 Copier JSON</button>
+      <button class="btn green" onclick="downloadJSON()">⬇️ Télécharger bulletin.json</button>
       <button class="btn blue" onclick="openSaveModal()">📄 Voir le JSON complet</button>
       <span id="copy-ok">✅ Copié dans le presse-papier !</span>
     </div>
-    <div style="font-size:11px;color:#8D6E63;margin-bottom:6px">👉 Clique "Copier JSON" → ouvre Bloc-notes → Ctrl+V → Enregistrer en <strong>bulletin.json</strong></div>
+    <div style="font-size:11px;color:#8D6E63;margin-bottom:6px">👉 Clique <strong>"Télécharger bulletin.json"</strong> après chaque encodage pour sauvegarder tes données.</div>
     <textarea id="json-box" readonly onclick="this.select()">${getJSON()}</textarea>
   </div>
 
